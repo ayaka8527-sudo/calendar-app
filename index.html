@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>はちみつカレンダー</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="はちみつカレンダー">
+<meta name="theme-color" content="#F4A628">
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --honey:#F4A628;--honey-light:#FFD97D;--honey-dark:#C97D15;
+  --red:#E05A3A;--cream:#FFF8E7;--warm:#FFFDF5;
+  --brown:#6B4226;--muted:#B08860;--border:#FFE5A3;
+  --green:#5FAD72;--card:#FFFCF0;
+}
+html,body{height:100%;background:var(--cream);color:var(--brown);
+  font-family:'Nunito','Hiragino Maru Gothic Pro','Hiragino Sans',sans-serif;
+  overscroll-behavior:none}
+body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+
+/* ── Layout ── */
+.app{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+.screen{display:none;flex:1;flex-direction:column;padding:0 18px 36px;animation:fadeIn .3s ease}
+.screen.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Honey drip top ── */
+.honey-top{width:100%;height:48px;background:var(--honey);position:relative;flex-shrink:0}
+.honey-top::after{content:'';position:absolute;bottom:-20px;left:0;right:0;height:20px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 20'%3E%3Cpath d='M0,0 Q20,20 40,0 Q60,20 80,0 Q100,20 120,0 Q140,20 160,0 Q180,20 200,0 Q220,20 240,0 Q260,20 280,0 Q300,20 320,0 Q340,20 360,0 Q380,20 400,0 L400,20 L0,20 Z' fill='%23F4A628'/%3E%3C/svg%3E") no-repeat;background-size:cover}
+
+/* ── Header ── */
+.header{display:flex;align-items:center;padding:16px 0 8px;gap:10px}
+.header-title{font-size:18px;font-weight:900;flex:1;color:var(--brown)}
+.btn-back{background:var(--honey-light);border:none;width:38px;height:38px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;
+  color:var(--honey-dark);transition:transform .1s;flex-shrink:0}
+.btn-back:active{transform:scale(.9)}
+
+/* ── Hero ── */
+.hero{text-align:center;padding:28px 0 20px;position:relative}
+.hero-bear{font-size:72px;line-height:1;margin-bottom:4px;filter:drop-shadow(0 4px 8px rgba(0,0,0,.1))}
+.hero h1{font-size:24px;font-weight:900;color:var(--honey-dark);margin-bottom:6px;
+  text-shadow:0 1px 0 rgba(255,255,255,.8)}
+.hero p{font-size:14px;color:var(--muted);font-weight:700;line-height:1.6}
+.bees{font-size:18px;position:absolute;top:24px;right:12px;animation:buzz 2s ease-in-out infinite}
+@keyframes buzz{0%,100%{transform:translate(0,0) rotate(-5deg)}50%{transform:translate(3px,-4px) rotate(5deg)}}
+
+/* ── Bubble card ── */
+.bubble{background:var(--card);border-radius:24px;padding:18px;
+  box-shadow:0 4px 16px rgba(200,120,0,.12);border:2px solid var(--border);margin-bottom:16px}
+.bubble-title{font-size:12px;font-weight:900;color:var(--honey-dark);text-transform:uppercase;
+  letter-spacing:.8px;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.bubble-title::before{content:'🍯';font-size:14px}
+
+/* ── Buttons ── */
+.btn{width:100%;padding:16px;border-radius:20px;border:none;font-size:16px;font-weight:900;
+  cursor:pointer;transition:transform .12s,box-shadow .12s;display:flex;align-items:center;
+  justify-content:center;gap:10px;font-family:inherit}
+.btn:active{transform:scale(.96)}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none}
+.btn-honey{background:linear-gradient(135deg,var(--honey),var(--honey-dark));color:#fff;
+  box-shadow:0 4px 14px rgba(244,166,40,.4)}
+.btn-red{background:linear-gradient(135deg,#E8694A,var(--red));color:#fff;
+  box-shadow:0 4px 14px rgba(224,90,58,.35)}
+.btn-soft{background:var(--card);color:var(--honey-dark);border:2.5px solid var(--border)}
+.btn-ghost{background:transparent;color:var(--muted);border:2px solid var(--border)}
+.btn-green{background:linear-gradient(135deg,#6FBA7F,var(--green));color:#fff;
+  box-shadow:0 4px 14px rgba(95,173,114,.35)}
+.btn + .btn{margin-top:10px}
+.btn-emoji{font-size:20px}
+
+/* ── Category grid ── */
+.cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.cat-btn{padding:12px 6px;border-radius:16px;border:2.5px solid transparent;
+  background:rgba(255,217,125,.2);cursor:pointer;text-align:center;font-size:12px;
+  font-weight:900;color:var(--muted);transition:all .15s;line-height:1.4;font-family:inherit}
+.cat-btn .cat-dot{display:block;width:26px;height:26px;border-radius:50%;margin:0 auto 6px;
+  box-shadow:0 2px 6px rgba(0,0,0,.15)}
+.cat-btn.selected{border-color:var(--honey);background:rgba(244,166,40,.15);color:var(--brown);
+  transform:scale(1.04)}
+.cat-btn:active{transform:scale(.95)}
+
+/* ── Photo area ── */
+.photo-area{border:3px dashed var(--honey-light);border-radius:24px;padding:32px 20px;
+  text-align:center;cursor:pointer;transition:background .15s;background:rgba(255,217,125,.1)}
+.photo-area:active{background:rgba(255,217,125,.25)}
+.photo-icon-big{font-size:48px;margin-bottom:10px}
+.photo-area p{color:var(--muted);font-size:14px;font-weight:700}
+.photo-preview{width:100%;max-height:300px;object-fit:contain;border-radius:18px;display:none}
+input[type=file]{display:none}
+.photo-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+
+/* ── Textarea ── */
+textarea{width:100%;min-height:150px;padding:16px;border:2.5px solid var(--border);
+  border-radius:18px;font-size:15px;font-family:inherit;font-weight:700;resize:vertical;
+  outline:none;transition:border-color .15s;color:var(--brown);background:var(--warm)}
+textarea:focus{border-color:var(--honey)}
+textarea::placeholder{color:#C9A87A}
+
+/* ── Form fields ── */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:11px;font-weight:900;color:var(--honey-dark);
+  text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px}
+.field input{width:100%;padding:12px 16px;border:2.5px solid var(--border);border-radius:14px;
+  font-size:15px;font-family:inherit;font-weight:700;outline:none;
+  transition:border-color .15s;color:var(--brown);background:var(--warm)}
+.field input:focus{border-color:var(--honey)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* ── Loading ── */
+.loading-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px}
+.bee-spin{font-size:56px;animation:beeSpin 1s linear infinite;display:block}
+@keyframes beeSpin{0%{transform:rotate(0deg) translateY(0)}25%{transform:rotate(90deg) translateY(-8px)}50%{transform:rotate(180deg) translateY(0)}75%{transform:rotate(270deg) translateY(-8px)}100%{transform:rotate(360deg) translateY(0)}}
+.loading-text{font-size:17px;font-weight:900;color:var(--honey-dark)}
+.loading-sub{font-size:13px;color:var(--muted);font-weight:700}
+
+/* ── Success ── */
+.success-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
+.success-bear{font-size:80px;animation:bearPop .5s cubic-bezier(.175,.885,.32,1.275)}
+@keyframes bearPop{from{transform:scale(0) rotate(-10deg)}to{transform:scale(1) rotate(0deg)}}
+.success-title{font-size:24px;font-weight:900;color:var(--honey-dark)}
+.success-sub{font-size:14px;color:var(--muted);font-weight:700;line-height:1.7;
+  background:var(--card);padding:14px 20px;border-radius:18px;border:2px solid var(--border)}
+
+/* ── Settings ── */
+.settings-note{font-size:13px;color:var(--muted);font-weight:700;line-height:1.6;
+  padding:12px 14px;background:rgba(244,166,40,.08);border-radius:14px;margin-top:6px;
+  border:1.5px solid var(--border)}
+
+/* ── Divider ── */
+.divider{display:flex;align-items:center;gap:10px;margin:14px 0;color:var(--muted);font-size:13px;font-weight:700}
+.divider::before,.divider::after{content:'';flex:1;height:2px;background:var(--border);border-radius:2px}
+
+/* ── Toast ── */
+#toast{position:fixed;bottom:calc(env(safe-area-inset-bottom) + 24px);left:50%;
+  transform:translateX(-50%) translateY(20px);background:var(--brown);color:#fff;
+  padding:12px 22px;border-radius:20px;font-size:14px;font-weight:900;opacity:0;
+  transition:all .3s;pointer-events:none;white-space:nowrap;z-index:100;
+  box-shadow:0 4px 16px rgba(0,0,0,.2)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ── HOME ── -->
+  <div id="screen-home" class="screen active" style="padding-top:0">
+    <div class="honey-top"></div>
+    <div class="hero" style="padding-top:32px">
+      <div class="bees">🐝</div>
+      <div class="hero-bear">🐻</div>
+      <h1>はちみつカレンダー</h1>
+      <p>だれの予定をつける？</p>
+    </div>
+
+    <div class="bubble">
+      <div class="bubble-title">だれの予定？</div>
+      <div class="cat-grid" id="home-cat-grid">
+        <button class="cat-btn" data-color="7" onclick="selectHomeCat(this)">
+          <span class="cat-dot" style="background:#039BE5"></span>仕事
+        </button>
+        <button class="cat-btn" data-color="6" onclick="selectHomeCat(this)">
+          <span class="cat-dot" style="background:#F4511E"></span>あやか
+        </button>
+        <button class="cat-btn" data-color="5" onclick="selectHomeCat(this)">
+          <span class="cat-dot" style="background:#F6BF26"></span>わたる
+        </button>
+        <button class="cat-btn" data-color="4" onclick="selectHomeCat(this)">
+          <span class="cat-dot" style="background:#E67C73"></span>さくら
+        </button>
+        <button class="cat-btn" data-color="2" onclick="selectHomeCat(this)">
+          <span class="cat-dot" style="background:#33B679"></span>りく
+        </button>
+        <button class="cat-btn" data-color="3" onclick="selectHomeCat(this)">
+          <span class="cat-dot" style="background:#8E24AA"></span>みんな
+        </button>
+      </div>
+    </div>
+
+    <button class="btn btn-honey" id="btn-go-photo" onclick="goInput('photo')" disabled>
+      <span class="btn-emoji">📷</span> 写真から登録
+    </button>
+    <div class="divider">🍯</div>
+    <button class="btn btn-soft" id="btn-go-text" onclick="goInput('text')" disabled>
+      <span class="btn-emoji">✍️</span> テキストから登録
+    </button>
+    <button class="btn btn-ghost" onclick="showScreen('settings')" style="margin-top:14px">
+      ⚙️ 設定
+    </button>
+  </div>
+
+  <!-- ── PHOTO ── -->
+  <div id="screen-photo" class="screen">
+    <div class="header">
+      <button class="btn-back" onclick="showScreen('home')">←</button>
+      <span class="header-title">📷 写真から登録</span>
+    </div>
+    <div class="photo-area" id="photo-area">
+      <div class="photo-icon-big">🖼️</div>
+      <p>写真を選んでね</p>
+      <img id="photo-preview" class="photo-preview" alt="preview">
+    </div>
+    <input type="file" id="file-input" accept="image/*" onchange="handlePhoto(this)">
+    <input type="file" id="camera-input" accept="image/*" capture="environment" onchange="handlePhoto(this)">
+    <div class="photo-btns">
+      <button class="btn btn-soft" onclick="document.getElementById('file-input').click()">
+        🖼️ ライブラリ
+      </button>
+      <button class="btn btn-soft" onclick="document.getElementById('camera-input').click()">
+        📷 カメラ
+      </button>
+    </div>
+    <button class="btn btn-honey" id="btn-analyze-photo" onclick="analyzePhoto()" style="margin-top:12px;display:none">
+      ✨ AIで解析する
+    </button>
+    <button class="btn btn-ghost" onclick="showScreen('home')" style="margin-top:10px">もどる</button>
+  </div>
+
+  <!-- ── TEXT ── -->
+  <div id="screen-text" class="screen">
+    <div class="header">
+      <button class="btn-back" onclick="showScreen('home')">←</button>
+      <span class="header-title">✍️ テキストから登録</span>
+    </div>
+    <div class="bubble" style="margin-bottom:14px">
+      <div class="bubble-title">予定を入力してね</div>
+      <textarea id="text-input" placeholder="例: 5月10日 14:00〜16:00 田中さんとランチ&#10;&#10;または予定のメモをそのまま貼り付けてね🍯"></textarea>
+    </div>
+    <button class="btn btn-honey" onclick="analyzeText()">
+      ✨ AIで解析する
+    </button>
+    <button class="btn btn-ghost" onclick="showScreen('home')" style="margin-top:10px">もどる</button>
+  </div>
+
+  <!-- ── LOADING ── -->
+  <div id="screen-loading" class="screen">
+    <div class="loading-wrap">
+      <span class="bee-spin">🐝</span>
+      <div>
+        <div class="loading-text" id="loading-text">みつ集め中…</div>
+        <div class="loading-sub" id="loading-sub">しばらく待ってね</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CONFIRM ── -->
+  <div id="screen-confirm" class="screen">
+    <div class="header">
+      <button class="btn-back" onclick="showScreen('home')">←</button>
+      <span class="header-title">🍯 内容を確認</span>
+    </div>
+    <div class="bubble">
+      <div class="field">
+        <label>タイトル</label>
+        <input type="text" id="conf-title" placeholder="イベントのタイトル">
+      </div>
+      <div class="field">
+        <label>日付</label>
+        <input type="date" id="conf-date">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>開始</label>
+          <input type="time" id="conf-start">
+        </div>
+        <div class="field">
+          <label>終了</label>
+          <input type="time" id="conf-end">
+        </div>
+      </div>
+      <div class="field">
+        <label>場所（任意）</label>
+        <input type="text" id="conf-location" placeholder="どこで？">
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label>メモ（任意）</label>
+        <input type="text" id="conf-desc" placeholder="メモや詳細">
+      </div>
+    </div>
+    <div class="bubble">
+      <div class="bubble-title">カテゴリ・色</div>
+      <div class="cat-grid">
+        <button class="cat-btn" data-color="7" onclick="selectCat(this)">
+          <span class="cat-dot" style="background:#039BE5"></span>仕事
+        </button>
+        <button class="cat-btn" data-color="6" onclick="selectCat(this)">
+          <span class="cat-dot" style="background:#F4511E"></span>あやか
+        </button>
+        <button class="cat-btn" data-color="5" onclick="selectCat(this)">
+          <span class="cat-dot" style="background:#F6BF26"></span>わたる
+        </button>
+        <button class="cat-btn" data-color="4" onclick="selectCat(this)">
+          <span class="cat-dot" style="background:#E67C73"></span>さくら
+        </button>
+        <button class="cat-btn" data-color="2" onclick="selectCat(this)">
+          <span class="cat-dot" style="background:#33B679"></span>りく
+        </button>
+        <button class="cat-btn" data-color="3" onclick="selectCat(this)">
+          <span class="cat-dot" style="background:#8E24AA"></span>みんな
+        </button>
+        <button class="cat-btn selected" data-color="" onclick="selectCat(this)">
+          <span class="cat-dot" style="background:#9E9E9E"></span>なし
+        </button>
+      </div>
+    </div>
+    <button class="btn btn-green" onclick="registerEvent()">
+      📅 カレンダーに登録する
+    </button>
+    <button class="btn btn-ghost" onclick="showScreen('home')" style="margin-top:10px">やり直す</button>
+  </div>
+
+  <!-- ── SUCCESS ── -->
+  <div id="screen-success" class="screen">
+    <div class="honey-top"></div>
+    <div class="success-wrap">
+      <div class="success-bear">🐻</div>
+      <div class="success-title">登録できたよ！🍯</div>
+      <div class="success-sub" id="success-detail">カレンダーに予定を追加しました</div>
+    </div>
+    <button class="btn btn-honey" onclick="showScreen('home')">ホームにもどる</button>
+    <button class="btn btn-ghost" onclick="showScreen('text')" style="margin-top:10px">続けて登録する</button>
+  </div>
+
+  <!-- ── SETTINGS ── -->
+  <div id="screen-settings" class="screen">
+    <div class="header">
+      <button class="btn-back" onclick="showScreen('home')">←</button>
+      <span class="header-title">⚙️ 設定</span>
+    </div>
+    <div class="bubble">
+      <div class="bubble-title">Gemini API キー</div>
+      <div class="field" style="margin-bottom:8px">
+        <input type="password" id="setting-gemini" placeholder="AIzaSy..." autocomplete="off">
+      </div>
+      <div class="settings-note">Google AI Studioで取得したAPIキーを入力してね。端末内だけに保存されるよ🐝</div>
+    </div>
+    <div class="bubble">
+      <div class="bubble-title">Google クライアントID</div>
+      <div class="field" style="margin-bottom:8px">
+        <input type="text" id="setting-gclient" placeholder="xxxxx.apps.googleusercontent.com" autocomplete="off">
+      </div>
+      <div class="settings-note">Google Cloud ConsoleのOAuth 2.0クライアントIDだよ🍯</div>
+    </div>
+    <button class="btn btn-honey" onclick="saveSettings()" style="margin-top:4px">保存する</button>
+    <button class="btn btn-ghost" onclick="showScreen('home')" style="margin-top:10px">キャンセル</button>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script src="https://accounts.google.com/gsi/client" async></script>
+<script>
+// ── Config ──────────────────────────────────────────────────
+const SCOPES = 'https://www.googleapis.com/auth/calendar.events';
+let tokenClient = null;
+let accessToken = null;
+let pendingEvent = null;
+
+function getGeminiKey() { return localStorage.getItem('gemini_key') || ''; }
+function getClientId() { return localStorage.getItem('google_client_id') || ''; }
+
+// ── Screens ─────────────────────────────────────────────────
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  window.scrollTo(0, 0);
+  if (name === 'home') {
+    homeColorId = '';
+    document.querySelectorAll('#home-cat-grid .cat-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById('btn-go-photo').disabled = true;
+    document.getElementById('btn-go-text').disabled = true;
+  }
+}
+
+// ── Settings ────────────────────────────────────────────────
+function saveSettings() {
+  const gemini = document.getElementById('setting-gemini').value.trim();
+  const gclient = document.getElementById('setting-gclient').value.trim();
+  if (gemini) localStorage.setItem('gemini_key', gemini);
+  if (gclient) localStorage.setItem('google_client_id', gclient);
+  tokenClient = null;
+  showToast('保存したよ 🍯');
+  showScreen('home');
+}
+
+function loadSettings() {
+  const g = getGeminiKey();
+  const c = getClientId();
+  if (g) document.getElementById('setting-gemini').value = g;
+  if (c) document.getElementById('setting-gclient').value = c;
+}
+
+function checkSettings() {
+  if (!getGeminiKey() || !getClientId()) {
+    showToast('設定でAPIキーを入力してね🐝');
+    loadSettings();
+    showScreen('settings');
+    return false;
+  }
+  return true;
+}
+
+// ── Category ─────────────────────────────────────────────────
+const CATEGORY_MAP = {
+  '仕事': '7', '仕事の予定': '7',
+  'あやか': '6', 'あやかの予定': '6',
+  'わたる': '5', 'わたるの予定': '5',
+  'さくら': '4', 'さくらの予定': '4',
+  'りく': '2', 'りくの予定': '2',
+  'みんな': '3', 'みんなの予定': '3',
+};
+
+let homeColorId = '';
+
+function selectHomeCat(btn) {
+  document.querySelectorAll('#home-cat-grid .cat-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  homeColorId = btn.dataset.color;
+  document.getElementById('btn-go-photo').disabled = false;
+  document.getElementById('btn-go-text').disabled = false;
+}
+
+function goInput(type) {
+  if (!homeColorId) { showToast('だれの予定か選んでね🐻'); return; }
+  showScreen(type);
+}
+
+function selectCat(btn) {
+  document.querySelectorAll('#screen-confirm .cat-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function getSelectedColorId() {
+  const sel = document.querySelector('#screen-confirm .cat-btn.selected');
+  return sel ? sel.dataset.color : '';
+}
+
+function setColorById(colorId) {
+  document.querySelectorAll('#screen-confirm .cat-btn').forEach(b => b.classList.remove('selected'));
+  const btn = document.querySelector(`#screen-confirm .cat-btn[data-color="${colorId}"]`);
+  if (btn) btn.classList.add('selected');
+  else document.querySelector('#screen-confirm .cat-btn[data-color=""]').classList.add('selected');
+}
+
+// ── Photo ────────────────────────────────────────────────────
+let photoBase64 = null;
+let photoMime = null;
+
+function handlePhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  photoMime = file.type || 'image/jpeg';
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const result = e.target.result;
+    photoBase64 = result.split(',')[1];
+    const preview = document.getElementById('photo-preview');
+    preview.src = result;
+    preview.style.display = 'block';
+    const area = document.getElementById('photo-area');
+    area.querySelector('.photo-icon-big').style.display = 'none';
+    area.querySelector('p').style.display = 'none';
+    document.getElementById('btn-analyze-photo').style.display = 'flex';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function analyzePhoto() {
+  if (!checkSettings()) return;
+  if (!photoBase64) { showToast('写真を選んでね🖼️'); return; }
+  showScreen('loading');
+  setLoading('写真を読んでるよ…', 'AIが予定を探してるよ🐝');
+  try {
+    const event = await callGemini(null, photoBase64, photoMime);
+    fillConfirm(event);
+    showScreen('confirm');
+  } catch (e) {
+    console.error(e);
+    showToast('よく見えなかったよ。写真を確認してね');
+    showScreen('photo');
+  }
+}
+
+// ── Text ─────────────────────────────────────────────────────
+async function analyzeText() {
+  if (!checkSettings()) return;
+  const text = document.getElementById('text-input').value.trim();
+  if (!text) { showToast('テキストを入力してね✍️'); return; }
+  showScreen('loading');
+  setLoading('読んでるよ…', 'AIが予定を探してるよ🐝');
+  try {
+    const event = await callGemini(text, null, null);
+    fillConfirm(event);
+    showScreen('confirm');
+  } catch (e) {
+    console.error(e);
+    showToast('うまく読めなかったよ。もう一度試してね');
+    showScreen('text');
+  }
+}
+
+function setLoading(text, sub) {
+  document.getElementById('loading-text').textContent = text;
+  document.getElementById('loading-sub').textContent = sub;
+}
+
+// ── Gemini API ───────────────────────────────────────────────
+async function callGemini(text, imageBase64, imageMime) {
+  const today = new Date().toLocaleDateString('ja-JP', {year:'numeric',month:'2-digit',day:'2-digit'}).replace(/\//g,'-');
+  const parts = [];
+
+  const prompt = `以下の情報からGoogleカレンダーに登録するイベント情報をJSONで抽出してください。
+今日の日付: ${today}
+タイムゾーン: Asia/Tokyo
+
+カテゴリのルール（内容から最も適切なものを1つ選ぶ）:
+- "仕事の予定": 仕事・会議・業務に関する予定
+- "あやかの予定": あやかさん個人の予定
+- "わたるの予定": わたるさんの予定
+- "さくらの予定": さくらさんの予定
+- "りくの予定": りくさんの予定
+- "みんなの予定": 家族全員・複数人の予定
+- "": どれにも当てはまらない場合は空文字
+
+必ずこの形式のJSONのみを返してください（他のテキストは不要）:
+{
+  "title": "イベントタイトル（必須）",
+  "date": "YYYY-MM-DD（必須、不明なら今日の日付）",
+  "startTime": "HH:MM（必須、不明なら09:00）",
+  "endTime": "HH:MM（必須、開始+1時間がデフォルト）",
+  "location": "場所（不明なら空文字）",
+  "description": "詳細・メモ（不明なら空文字）",
+  "category": "上記カテゴリのいずれか（不明なら空文字）"
+}`;
+
+  if (imageBase64) {
+    parts.push({ inline_data: { mime_type: imageMime, data: imageBase64 } });
+    parts.push({ text: prompt });
+  } else {
+    parts.push({ text: prompt + '\n\n入力テキスト:\n' + text });
+  }
+
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${getGeminiKey()}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts }],
+        generationConfig: { temperature: 0.1 }
+      })
+    }
+  );
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || 'Gemini API error');
+  }
+
+  const data = await res.json();
+  let raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  raw = raw.replace(/```json\n?/gi, '').replace(/```\n?/gi, '').trim();
+  return JSON.parse(raw);
+}
+
+// ── Confirm form ─────────────────────────────────────────────
+function fillConfirm(event) {
+  document.getElementById('conf-title').value = event.title || '';
+  document.getElementById('conf-date').value = event.date || todayStr();
+  document.getElementById('conf-start').value = event.startTime || '09:00';
+  document.getElementById('conf-end').value = event.endTime || '10:00';
+  document.getElementById('conf-location').value = event.location || '';
+  document.getElementById('conf-desc').value = event.description || '';
+  const colorId = homeColorId || event.colorId || CATEGORY_MAP[event.category] || '';
+  setColorById(colorId);
+}
+
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function getConfirmData() {
+  return {
+    title: document.getElementById('conf-title').value.trim(),
+    date: document.getElementById('conf-date').value,
+    startTime: document.getElementById('conf-start').value,
+    endTime: document.getElementById('conf-end').value,
+    location: document.getElementById('conf-location').value.trim(),
+    description: document.getElementById('conf-desc').value.trim(),
+    colorId: getSelectedColorId(),
+  };
+}
+
+// ── Google Calendar ──────────────────────────────────────────
+function initTokenClient() {
+  if (!window.google?.accounts?.oauth2) return null;
+  return google.accounts.oauth2.initTokenClient({
+    client_id: getClientId(),
+    scope: SCOPES,
+    callback: async (resp) => {
+      if (resp.error) { showToast('Googleログインに失敗したよ'); showScreen('confirm'); return; }
+      accessToken = resp.access_token;
+      await postCalendarEvent(pendingEvent);
+    }
+  });
+}
+
+async function registerEvent() {
+  const data = getConfirmData();
+  if (!data.title) { showToast('タイトルを入れてね🍯'); return; }
+  if (!data.date) { showToast('日付を入れてね'); return; }
+  if (!checkSettings()) return;
+
+  pendingEvent = data;
+  setLoading('カレンダーに登録中…', 'Googleに送ってるよ🐝');
+
+  if (!tokenClient) tokenClient = initTokenClient();
+  if (!tokenClient) {
+    showToast('少し待ってからもう一度試してね');
+    return;
+  }
+
+  showScreen('loading');
+  if (accessToken) {
+    await postCalendarEvent(data);
+  } else {
+    tokenClient.requestAccessToken({ prompt: 'consent' });
+  }
+}
+
+async function postCalendarEvent(data) {
+  try {
+    const body = {
+      summary: data.title,
+      location: data.location,
+      description: data.description,
+      start: { dateTime: `${data.date}T${data.startTime}:00`, timeZone: 'Asia/Tokyo' },
+      end: { dateTime: `${data.date}T${data.endTime}:00`, timeZone: 'Asia/Tokyo' },
+      ...(data.colorId ? { colorId: data.colorId } : {}),
+    };
+
+    const res = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (res.status === 401) {
+      accessToken = null;
+      showToast('もう一度ログインしてね');
+      showScreen('confirm');
+      return;
+    }
+
+    if (!res.ok) throw new Error('Calendar API error ' + res.status);
+
+    document.getElementById('success-detail').innerHTML =
+      `<strong>${data.title}</strong><br>${formatDate(data.date)} ${data.startTime}〜${data.endTime}`;
+    showScreen('success');
+  } catch (e) {
+    console.error(e);
+    showToast('登録できなかったよ。設定を確認してね');
+    showScreen('confirm');
+  }
+}
+
+function formatDate(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
+}
+
+// ── Toast ────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── Init ─────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  loadSettings();
+  if (!getGeminiKey() || !getClientId()) {
+    setTimeout(() => {
+      showToast('設定でAPIキーを入力してね🐝');
+      showScreen('settings');
+    }, 600);
+  }
+});
+</script>
+</body>
+</html>
