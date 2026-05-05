@@ -501,7 +501,7 @@ async function analyzeText() {
     showScreen('confirm');
   } catch (e) {
     console.error(e);
-    showToast('うまく読めなかったよ。もう一度試してね');
+    showToast('エラー: ' + e.message);
     showScreen('text');
   }
 }
