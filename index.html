@@ -144,6 +144,38 @@ textarea::placeholder{color:#C9A87A}
   transition:all .3s;pointer-events:none;white-space:nowrap;z-index:100;
   box-shadow:0 4px 16px rgba(0,0,0,.2)}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── Forecast ── */
+.forecast-summary{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px}
+.forecast-fund{background:rgba(244,166,40,.1);border-radius:14px;padding:10px 12px;border:1.5px solid var(--border)}
+.forecast-fund-name{font-size:10px;font-weight:900;color:var(--honey-dark);margin-bottom:4px;line-height:1.4}
+.forecast-fund-val{font-size:15px;font-weight:900;color:var(--brown)}
+.forecast-total{background:linear-gradient(135deg,var(--honey),var(--honey-dark));color:#fff;
+  border-radius:18px;padding:14px 16px;text-align:center;margin:12px 0 0}
+.forecast-total-label{font-size:12px;font-weight:900;opacity:.85;margin-bottom:4px}
+.forecast-total-val{font-size:26px;font-weight:900}
+.scenario-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px}
+.scenario-tab{padding:10px 4px;border-radius:14px;border:2px solid var(--border);
+  background:var(--card);cursor:pointer;text-align:center;font-size:11px;
+  font-weight:900;color:var(--muted);font-family:inherit;transition:all .15s;line-height:1.5}
+.scenario-tab.active{border-color:var(--honey);background:rgba(244,166,40,.15);color:var(--brown)}
+.scenario-tab:active{transform:scale(.95)}
+.scenario-rate{display:block;font-size:15px;margin-top:2px}
+.forecast-table-wrap{overflow-x:auto;border-radius:16px;border:2px solid var(--border)}
+.forecast-table{width:100%;border-collapse:collapse;font-size:13px}
+.forecast-table th{background:var(--honey);color:#fff;padding:10px 12px;font-weight:900;
+  text-align:center;font-size:12px}
+.forecast-table th:first-child{text-align:left}
+.forecast-table td{padding:9px 12px;border-bottom:1px solid var(--border);font-weight:700;color:var(--brown)}
+.forecast-table td:first-child{font-weight:900;color:var(--honey-dark)}
+.forecast-table td:not(:first-child){text-align:right}
+.forecast-table tr:last-child td{border-bottom:none}
+.forecast-table tr.row-current{background:rgba(244,166,40,.14)}
+.forecast-table tr.row-current td:first-child{color:var(--honey-dark)}
+.forecast-table tr.row-end td:first-child{color:var(--red)}
+.forecast-note{font-size:11px;color:var(--muted);font-weight:700;line-height:1.6;
+  padding:10px 12px;background:rgba(244,166,40,.06);border-radius:12px;
+  border:1.5px solid var(--border);margin-top:12px}
 </style>
 </head>
 <body>
@@ -192,6 +224,10 @@ textarea::placeholder{color:#C9A87A}
     </button>
     <button class="btn btn-ghost" onclick="showScreen('settings')" style="margin-top:14px">
       ⚙️ 設定
+    </button>
+    <div class="divider">💹</div>
+    <button class="btn btn-soft" onclick="showForecastScreen()" style="margin-top:0;border-color:#5FAD72;color:#3d8f52">
+      <span class="btn-emoji">💹</span> 資産予測（〜2042年）
     </button>
   </div>
 
@@ -349,6 +385,73 @@ textarea::placeholder{color:#C9A87A}
     </div>
     <button class="btn btn-honey" onclick="saveSettings()" style="margin-top:4px">保存する</button>
     <button class="btn btn-ghost" onclick="showScreen('home')" style="margin-top:10px">キャンセル</button>
+  </div>
+
+  <!-- ── FORECAST ── -->
+  <div id="screen-forecast" class="screen">
+    <div class="header">
+      <button class="btn-back" onclick="showScreen('home')">←</button>
+      <span class="header-title">💹 資産予測（〜2042年）</span>
+    </div>
+
+    <div class="bubble">
+      <div class="bubble-title">現在の保有資産</div>
+      <div class="forecast-summary">
+        <div class="forecast-fund">
+          <div class="forecast-fund-name">楽天・全米株式(VTI)<br>2023年取得</div>
+          <div class="forecast-fund-val">259,807円</div>
+        </div>
+        <div class="forecast-fund">
+          <div class="forecast-fund-name">eMAXIS Slim<br>先進国株式(除く日本)</div>
+          <div class="forecast-fund-val">110,482円</div>
+        </div>
+        <div class="forecast-fund">
+          <div class="forecast-fund-name">eMAXIS Slim S&amp;P500<br>2023年取得</div>
+          <div class="forecast-fund-val">451,438円</div>
+        </div>
+        <div class="forecast-fund">
+          <div class="forecast-fund-name">eMAXIS Slim S&amp;P500<br>2022年取得</div>
+          <div class="forecast-fund-val">790,127円</div>
+        </div>
+      </div>
+      <div class="forecast-total">
+        <div class="forecast-total-label">合計評価額（2026年5月現在）</div>
+        <div class="forecast-total-val">1,611,854円</div>
+      </div>
+    </div>
+
+    <div class="bubble">
+      <div class="bubble-title">シナリオ別予測</div>
+      <div class="scenario-tabs">
+        <button class="scenario-tab" id="tab-conservative" onclick="selectScenario('conservative')">
+          😔 保守的
+          <span class="scenario-rate" style="color:var(--green)">年 +4%</span>
+        </button>
+        <button class="scenario-tab active" id="tab-standard" onclick="selectScenario('standard')">
+          😊 標準
+          <span class="scenario-rate" style="color:var(--honey-dark)">年 +7%</span>
+        </button>
+        <button class="scenario-tab" id="tab-optimistic" onclick="selectScenario('optimistic')">
+          🚀 楽観的
+          <span class="scenario-rate" style="color:var(--red)">年 +10%</span>
+        </button>
+      </div>
+      <div class="forecast-table-wrap">
+        <table class="forecast-table">
+          <thead>
+            <tr>
+              <th>年</th>
+              <th>予測評価額</th>
+              <th>元本比</th>
+            </tr>
+          </thead>
+          <tbody id="forecast-tbody"></tbody>
+        </table>
+      </div>
+      <div class="forecast-note">
+        ※ 楽天証券の保有商品（2026年5月時点）をもとに試算。4件目のファンドは画面外のため未計上。為替・基準価額の変動により実際の評価額は大きく異なります。投資は自己責任でお願いします🐝
+      </div>
+    </div>
   </div>
 
 </div>
@@ -685,6 +788,50 @@ function showToast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── Forecast ─────────────────────────────────────────────────
+const FORECAST_BASE = 1611854;
+const FORECAST_RATES = { conservative: 0.04, standard: 0.07, optimistic: 0.10 };
+let currentScenario = 'standard';
+
+function showForecastScreen() {
+  showScreen('forecast');
+  renderForecast();
+}
+
+function selectScenario(scenario) {
+  currentScenario = scenario;
+  document.querySelectorAll('.scenario-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + scenario).classList.add('active');
+  renderForecast();
+}
+
+function renderForecast() {
+  const rate = FORECAST_RATES[currentScenario];
+  const tbody = document.getElementById('forecast-tbody');
+  const startYear = 2026;
+  const endYear = 2042;
+  let rows = '';
+
+  for (let y = startYear; y <= endYear; y++) {
+    const n = y - startYear;
+    const value = Math.round(FORECAST_BASE * Math.pow(1 + rate, n));
+    const growthPct = n === 0 ? 0 : (Math.pow(1 + rate, n) - 1) * 100;
+    const growthLabel = n === 0 ? '基準' : '+' + growthPct.toFixed(0) + '%';
+    const growthColor = n === 0 ? 'var(--muted)' : 'var(--green)';
+    const isCurrent = y === startYear;
+    const isEnd = y === endYear;
+    const rowClass = isCurrent ? 'row-current' : (isEnd ? 'row-end' : '');
+    const yearLabel = y + '年' + (isCurrent ? ' 🐝' : isEnd ? ' 🎯' : '');
+    rows += `<tr class="${rowClass}">
+      <td>${yearLabel}</td>
+      <td>${value.toLocaleString()}円</td>
+      <td style="color:${growthColor}">${growthLabel}</td>
+    </tr>`;
+  }
+
+  tbody.innerHTML = rows;
 }
 
 // ── Init ─────────────────────────────────────────────────────
