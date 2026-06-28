@@ -97,10 +97,9 @@
     animation: pop .35s ease;
   }
   @keyframes pop { 0% { transform: scale(.6); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-  .photo {
-    width: 100%; height: 100%; object-fit: cover;
-    border-radius: 32px; background: #fff;
-    box-shadow: 0 12px 26px rgba(0,0,0,.18);
+  .illust {
+    width: 88%; height: 88%; object-fit: contain;
+    filter: drop-shadow(0 10px 16px rgba(0,0,0,.18));
   }
   .emoji { font-size: clamp(120px, 40vw, 300px); line-height: 1;
     filter: drop-shadow(0 10px 14px rgba(0,0,0,.15)); }
@@ -171,15 +170,15 @@
 <script>
   // ===== ジャンル定義 =====
   const GENRES = {
-    food:    { label: "たべもの", icon: "🍎", type: "photo" },
-    animal:  { label: "いきもの", icon: "🐶", type: "photo" },
-    vehicle: { label: "のりもの", icon: "🚗", type: "photo" },
+    food:    { label: "たべもの", icon: "🍎", type: "illust" },
+    animal:  { label: "いきもの", icon: "🐶", type: "illust" },
+    vehicle: { label: "のりもの", icon: "🚗", type: "illust" },
     color:   { label: "いろ",     icon: "🎨", type: "color" },
     number:  { label: "かず",     icon: "🔢", type: "number" },
   };
 
   // ===== データ =====
-  // photo: e=フォールバック絵文字 / w=ことば / k=写真キーワード(英語)
+  // illust: e=絵文字(イラスト/フォールバック) / w=ことば（kは未使用）
   const DECKS = {
     food: [
       { e:"🍎", w:"りんご", k:"apple" }, { e:"🍌", w:"バナナ", k:"banana" },
@@ -245,6 +244,15 @@
   let order = [];
   let idx = 0;
   let revealed = false;
+  let renderToken = 0; // カード描画ごとに更新（非同期の画像差し替え対策）
+
+  // 絵文字 → Twemojiのファイル名(コードポイント)。FE0F(異体字)は除外
+  function twemojiCode(emoji) {
+    return Array.from(emoji)
+      .map(c => c.codePointAt(0).toString(16))
+      .filter(h => h !== "fe0f")
+      .join("-");
+  }
 
   // ===== ホーム生成 =====
   const grid = document.getElementById("genreGrid");
@@ -285,6 +293,7 @@
 
   // 絵柄の描画（ジャンルtypeで分岐）
   function buildPic(card) {
+    renderToken++;
     const type = GENRES[genreKey].type;
     picEl.innerHTML = "";
     picEl.style.animation = "none"; void picEl.offsetWidth; picEl.style.animation = "";
@@ -304,34 +313,36 @@
       picEl.appendChild(wrap);
       return;
     }
-    // photo: 実写写真。失敗したら絵文字にフォールバック
-    const img = document.createElement("img");
-    img.className = "photo";
+    // illust: フラットなイラスト(Twemoji SVG)。まず絵文字を即表示し、
+    // イラストが読み込めたら差し替える（読めない端末は絵文字のまま）
+    const em = document.createElement("div");
+    em.className = "emoji";
+    em.textContent = card.e;
+    picEl.appendChild(em);
+
+    const token = renderToken;
+    const img = new Image();
+    img.className = "illust";
     img.alt = card.w;
-    img.referrerPolicy = "no-referrer";
-    // lock=キーワードのハッシュ → 毎回おなじ写真で安定表示
-    let lock = 0;
-    for (const ch of card.k) lock = (lock * 31 + ch.charCodeAt(0)) % 100000;
-    img.src = "https://loremflickr.com/400/400/" + encodeURIComponent(card.k) + "?lock=" + lock;
-    img.onerror = () => {
-      const em = document.createElement("div");
-      em.className = "emoji";
-      em.textContent = card.e;
+    img.onload = () => {
+      if (token !== renderToken) return; // すでに次のカードなら無視
       picEl.innerHTML = "";
-      picEl.appendChild(em);
+      picEl.appendChild(img);
     };
-    picEl.appendChild(img);
+    img.onerror = () => { /* 絵文字のまま */ };
+    img.src = "https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/" + twemojiCode(card.e) + ".svg";
   }
 
+  let pendingWordHTML = "";
   function renderCard() {
     const card = deck[order[idx]];
     buildPic(card);
-    if (GENRES[genreKey].type === "number") {
-      wordEl.innerHTML = '<span class="num">' + card.n + '</span>　' + card.w;
-    } else {
-      wordEl.textContent = card.w;
-    }
+    // 文字はタップするまで入れない（前カードのフェードアウト中にチラ見えするのを防ぐ）
+    pendingWordHTML = (GENRES[genreKey].type === "number")
+      ? '<span class="num">' + card.n + '</span>　' + card.w
+      : card.w;
     wordEl.classList.remove("show");
+    wordEl.textContent = "";
     revealed = false;
     counterEl.textContent = (idx + 1) + " / " + deck.length;
     hintEl.textContent = "タップ";
@@ -377,6 +388,7 @@
 
   function reveal() {
     if (revealed) return;
+    wordEl.innerHTML = pendingWordHTML; // このタイミングで初めて文字を出す
     wordEl.classList.add("show");
     revealed = true;
     hintEl.textContent = "つぎへ タップ";
