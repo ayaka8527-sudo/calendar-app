@@ -12,9 +12,10 @@
   :root {
     --bg: #FFF7E6;
     --pink: #FF8FAB;
-    --green: #7BC47F;
+    --green: #56A86A;
     --blue: #66B2E8;
-    --yellow: #FFD56B;
+    --purple: #9B7BD4;
+    --orange: #FF7B54;
     --ink: #4A3B33;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -28,42 +29,43 @@
   }
   #app { height: 100%; display: flex; flex-direction: column; }
 
-  /* ===== タイトル / ジャンル選択 ===== */
   .screen { flex: 1; display: none; flex-direction: column; }
   .screen.active { display: flex; }
 
+  /* ===== ホーム ===== */
   #home {
     align-items: center; justify-content: center;
-    text-align: center; padding: 24px;
-    gap: 28px;
+    text-align: center; padding: 24px; gap: 24px;
+    overflow-y: auto;
   }
   #home h1 {
     font-size: clamp(28px, 8vw, 52px);
-    margin: 0; color: var(--pink);
-    text-shadow: 2px 2px 0 #fff;
+    margin: 0; color: var(--pink); text-shadow: 2px 2px 0 #fff;
   }
-  #home .sub { font-size: clamp(15px, 4vw, 22px); color: #8a7a70; margin-top: -12px; }
+  #home .sub { font-size: clamp(15px, 4vw, 22px); color: #8a7a70; margin-top: -10px; }
   .genre-grid {
     display: grid; grid-template-columns: 1fr 1fr;
-    gap: 20px; width: min(100%, 520px);
+    gap: 16px; width: min(100%, 540px);
   }
   .genre-btn {
-    border: none; border-radius: 28px; cursor: pointer;
-    padding: 28px 12px; color: #fff; font-weight: 800;
-    font-size: clamp(20px, 6vw, 30px);
-    box-shadow: 0 8px 0 rgba(0,0,0,.12), 0 12px 24px rgba(0,0,0,.12);
-    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    border: none; border-radius: 26px; cursor: pointer;
+    padding: 22px 10px; color: #fff; font-weight: 800;
+    font-size: clamp(18px, 5.2vw, 28px);
+    box-shadow: 0 7px 0 rgba(0,0,0,.12), 0 12px 22px rgba(0,0,0,.12);
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
     transition: transform .08s ease;
   }
-  .genre-btn .ico { font-size: clamp(56px, 16vw, 96px); line-height: 1; }
-  .genre-btn:active { transform: translateY(4px); box-shadow: 0 4px 0 rgba(0,0,0,.12); }
-  .genre-btn.food { background: linear-gradient(160deg, #FF9F68, #FF7B54); }
-  .genre-btn.animal { background: linear-gradient(160deg, #7BC47F, #56A86A); }
+  .genre-btn .ico { font-size: clamp(48px, 13vw, 84px); line-height: 1; }
+  .genre-btn:active { transform: translateY(4px); box-shadow: 0 3px 0 rgba(0,0,0,.12); }
+  .genre-btn.food    { background: linear-gradient(160deg, #FF9F68, #FF7B54); }
+  .genre-btn.animal  { background: linear-gradient(160deg, #7BC47F, #56A86A); }
+  .genre-btn.vehicle { background: linear-gradient(160deg, #6FC0EE, #3E96D6); }
+  .genre-btn.color   { background: linear-gradient(160deg, #C79BEC, #9B6FD4); }
+  .genre-btn.number  { background: linear-gradient(160deg, #FFC861, #FF9F2E); }
+  .genre-btn.span2   { grid-column: 1 / -1; }
 
   /* ===== カード ===== */
-  #card {
-    position: relative; align-items: stretch; justify-content: center;
-  }
+  #card { position: relative; }
   .topbar {
     position: absolute; top: 0; left: 0; right: 0;
     display: flex; align-items: center; justify-content: space-between;
@@ -85,30 +87,55 @@
   .cardface {
     flex: 1; display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    cursor: pointer; padding: 80px 16px 32px;
-    text-align: center;
+    cursor: pointer; padding: 84px 16px 64px; text-align: center;
   }
-  .emoji {
-    font-size: clamp(120px, 42vw, 320px); line-height: 1;
-    filter: drop-shadow(0 10px 14px rgba(0,0,0,.15));
+
+  /* 絵柄エリア（写真／絵文字／色／かず を切替表示） */
+  .pic {
+    width: min(70vw, 360px); height: min(70vw, 360px);
+    display: flex; align-items: center; justify-content: center;
     animation: pop .35s ease;
   }
   @keyframes pop { 0% { transform: scale(.6); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+  .photo {
+    width: 100%; height: 100%; object-fit: cover;
+    border-radius: 32px; background: #fff;
+    box-shadow: 0 12px 26px rgba(0,0,0,.18);
+  }
+  .emoji { font-size: clamp(120px, 40vw, 300px); line-height: 1;
+    filter: drop-shadow(0 10px 14px rgba(0,0,0,.15)); }
+  .swatch {
+    width: 100%; height: 100%; border-radius: 50%;
+    box-shadow: 0 12px 26px rgba(0,0,0,.2), inset 0 0 0 6px rgba(255,255,255,.55);
+  }
+  .dots {
+    display: flex; flex-wrap: wrap; gap: 4%; align-content: center; justify-content: center;
+    width: 100%; height: 100%;
+  }
+  .dots span {
+    width: 22%; aspect-ratio: 1; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #FF8FAB, #E8467A);
+    box-shadow: 0 4px 8px rgba(0,0,0,.18);
+  }
+
   .word {
-    margin-top: 18px; min-height: 1.2em;
-    font-size: clamp(40px, 13vw, 96px); font-weight: 900;
+    margin-top: 20px; min-height: 1.2em;
+    font-size: clamp(40px, 12vw, 88px); font-weight: 900;
     color: var(--pink); letter-spacing: .04em;
     opacity: 0; transform: translateY(10px);
     transition: opacity .2s ease, transform .2s ease;
   }
-  #card.food .word { color: #FF7B54; }
-  #card.animal .word { color: #56A86A; }
+  #card.food .word, #card.number .word { color: var(--orange); }
+  #card.animal .word { color: var(--green); }
+  #card.vehicle .word { color: var(--blue); }
+  #card.color .word  { color: var(--purple); }
   .word.show { opacity: 1; transform: translateY(0); }
+  .word .num { font-size: 1.3em; }
+
   .hint {
     position: absolute; bottom: 22px; left: 0; right: 0;
     text-align: center; color: #b3a89f; font-size: 16px; font-weight: 700;
-    pointer-events: none;
-    animation: blink 1.6s ease-in-out infinite;
+    pointer-events: none; animation: blink 1.6s ease-in-out infinite;
   }
   @keyframes blink { 0%,100% { opacity: .4; } 50% { opacity: 1; } }
 </style>
@@ -122,14 +149,7 @@
       <h1>ことばのカード</h1>
       <div class="sub">えを タップ してね</div>
     </div>
-    <div class="genre-grid">
-      <button class="genre-btn food" data-genre="food">
-        <span class="ico">🍎</span>たべもの
-      </button>
-      <button class="genre-btn animal" data-genre="animal">
-        <span class="ico">🐶</span>いきもの
-      </button>
-    </div>
+    <div class="genre-grid" id="genreGrid"></div>
   </section>
 
   <!-- カード -->
@@ -140,8 +160,8 @@
       <button class="iconbtn" id="soundBtn" aria-label="おと">🔊</button>
     </div>
     <div class="cardface" id="cardface">
-      <div class="emoji" id="emoji">🍎</div>
-      <div class="word" id="word">りんご</div>
+      <div class="pic" id="pic"></div>
+      <div class="word" id="word"></div>
     </div>
     <div class="hint" id="hint">タップ</div>
   </section>
@@ -149,43 +169,94 @@
 </div>
 
 <script>
-  // ===== データ（ジャンル別フラッシュカード） =====
-  const DECKS = {
-    food: [
-      { e: "🍎", w: "りんご" }, { e: "🍌", w: "バナナ" }, { e: "🍓", w: "いちご" },
-      { e: "🍇", w: "ぶどう" }, { e: "🍊", w: "みかん" }, { e: "🍉", w: "すいか" },
-      { e: "🍑", w: "もも" },   { e: "🍅", w: "トマト" }, { e: "🥕", w: "にんじん" },
-      { e: "🌽", w: "とうもろこし" }, { e: "🍆", w: "なす" }, { e: "🥔", w: "じゃがいも" },
-      { e: "🍞", w: "パン" },   { e: "🍙", w: "おにぎり" }, { e: "🍚", w: "ごはん" },
-      { e: "🍜", w: "ラーメン" }, { e: "🍳", w: "たまごやき" }, { e: "🥛", w: "ぎゅうにゅう" },
-      { e: "🧀", w: "チーズ" }, { e: "🍰", w: "ケーキ" }, { e: "🍪", w: "クッキー" },
-      { e: "🍦", w: "アイス" }, { e: "🍭", w: "あめ" },   { e: "🥚", w: "たまご" }
-    ],
-    animal: [
-      { e: "🐶", w: "いぬ" },   { e: "🐱", w: "ねこ" },   { e: "🐰", w: "うさぎ" },
-      { e: "🐻", w: "くま" },   { e: "🐼", w: "パンダ" }, { e: "🐨", w: "コアラ" },
-      { e: "🐵", w: "さる" },   { e: "🦁", w: "ライオン" }, { e: "🐯", w: "とら" },
-      { e: "🐘", w: "ぞう" },   { e: "🦒", w: "きりん" }, { e: "🐮", w: "うし" },
-      { e: "🐷", w: "ぶた" },   { e: "🐴", w: "うま" },   { e: "🐑", w: "ひつじ" },
-      { e: "🐭", w: "ねずみ" }, { e: "🐸", w: "かえる" }, { e: "🐢", w: "かめ" },
-      { e: "🐍", w: "へび" },   { e: "🐟", w: "さかな" }, { e: "🐙", w: "たこ" },
-      { e: "🐦", w: "とり" },   { e: "🐔", w: "にわとり" }, { e: "🦆", w: "あひる" },
-      { e: "🐝", w: "はち" },   { e: "🦋", w: "ちょうちょ" }, { e: "🐞", w: "てんとうむし" }
-    ]
+  // ===== ジャンル定義 =====
+  const GENRES = {
+    food:    { label: "たべもの", icon: "🍎", type: "photo" },
+    animal:  { label: "いきもの", icon: "🐶", type: "photo" },
+    vehicle: { label: "のりもの", icon: "🚗", type: "photo" },
+    color:   { label: "いろ",     icon: "🎨", type: "color" },
+    number:  { label: "かず",     icon: "🔢", type: "number" },
   };
 
-  // ===== 状態 =====
-  const screens = { home: document.getElementById("home"), card: document.getElementById("card") };
-  const emojiEl = document.getElementById("emoji");
-  const wordEl  = document.getElementById("word");
-  const counterEl = document.getElementById("counter");
-  const cardEl  = document.getElementById("card");
-  const hintEl  = document.getElementById("hint");
+  // ===== データ =====
+  // photo: e=フォールバック絵文字 / w=ことば / k=写真キーワード(英語)
+  const DECKS = {
+    food: [
+      { e:"🍎", w:"りんご", k:"apple" }, { e:"🍌", w:"バナナ", k:"banana" },
+      { e:"🍓", w:"いちご", k:"strawberry" }, { e:"🍇", w:"ぶどう", k:"grapes" },
+      { e:"🍊", w:"みかん", k:"mandarin,orange" }, { e:"🍉", w:"すいか", k:"watermelon" },
+      { e:"🍑", w:"もも", k:"peach" }, { e:"🍅", w:"トマト", k:"tomato" },
+      { e:"🥕", w:"にんじん", k:"carrot" }, { e:"🌽", w:"とうもろこし", k:"corn,cob" },
+      { e:"🍞", w:"パン", k:"bread" }, { e:"🍙", w:"おにぎり", k:"onigiri,riceball" },
+      { e:"🍚", w:"ごはん", k:"rice,bowl" }, { e:"🍜", w:"ラーメン", k:"ramen" },
+      { e:"🥚", w:"たまご", k:"egg" }, { e:"🥛", w:"ぎゅうにゅう", k:"milk,glass" },
+      { e:"🧀", w:"チーズ", k:"cheese" }, { e:"🍰", w:"ケーキ", k:"cake,slice" },
+      { e:"🍪", w:"クッキー", k:"cookie" }, { e:"🍦", w:"アイス", k:"icecream" },
+    ],
+    animal: [
+      { e:"🐶", w:"いぬ", k:"dog,puppy" }, { e:"🐱", w:"ねこ", k:"cat,kitten" },
+      { e:"🐰", w:"うさぎ", k:"rabbit" }, { e:"🐻", w:"くま", k:"bear" },
+      { e:"🐼", w:"パンダ", k:"panda" }, { e:"🐨", w:"コアラ", k:"koala" },
+      { e:"🐵", w:"さる", k:"monkey" }, { e:"🦁", w:"ライオン", k:"lion" },
+      { e:"🐯", w:"とら", k:"tiger" }, { e:"🐘", w:"ぞう", k:"elephant" },
+      { e:"🦒", w:"きりん", k:"giraffe" }, { e:"🐮", w:"うし", k:"cow" },
+      { e:"🐷", w:"ぶた", k:"pig" }, { e:"🐴", w:"うま", k:"horse" },
+      { e:"🐑", w:"ひつじ", k:"sheep" }, { e:"🐸", w:"かえる", k:"frog" },
+      { e:"🐢", w:"かめ", k:"turtle" }, { e:"🐟", w:"さかな", k:"fish" },
+      { e:"🐦", w:"とり", k:"bird" }, { e:"🦋", w:"ちょうちょ", k:"butterfly" },
+    ],
+    vehicle: [
+      { e:"🚗", w:"くるま", k:"car" }, { e:"🚌", w:"バス", k:"bus" },
+      { e:"🚃", w:"でんしゃ", k:"train" }, { e:"🚄", w:"しんかんせん", k:"shinkansen,bullettrain" },
+      { e:"✈️", w:"ひこうき", k:"airplane" }, { e:"🚁", w:"ヘリコプター", k:"helicopter" },
+      { e:"🚢", w:"ふね", k:"ship,boat" }, { e:"🚒", w:"しょうぼうしゃ", k:"firetruck" },
+      { e:"🚑", w:"きゅうきゅうしゃ", k:"ambulance" }, { e:"🚓", w:"パトカー", k:"police,car" },
+      { e:"🚚", w:"トラック", k:"truck" }, { e:"🚲", w:"じてんしゃ", k:"bicycle" },
+      { e:"🏍️", w:"バイク", k:"motorcycle" }, { e:"🚜", w:"ショベルカー", k:"excavator" },
+      { e:"🚕", w:"タクシー", k:"taxi" }, { e:"🚀", w:"ロケット", k:"rocket" },
+    ],
+    // color: w=ことば / c=色 / light=明るい色(枠線つき)
+    color: [
+      { w:"あか", c:"#E74C3C" }, { w:"あお", c:"#3498DB" }, { w:"きいろ", c:"#FFD400" },
+      { w:"みどり", c:"#2ECC71" }, { w:"オレンジ", c:"#FF8C00" }, { w:"むらさき", c:"#9B59B6" },
+      { w:"ピンク", c:"#FF6FA5" }, { w:"ちゃいろ", c:"#8D5A2B" }, { w:"みずいろ", c:"#7FD4F0" },
+      { w:"しろ", c:"#FFFFFF", light:true }, { w:"くろ", c:"#2C2C2C" }, { w:"はいいろ", c:"#A9A9A9" },
+    ],
+    // number: w=よみ / n=すうじ / count=こすう
+    number: [
+      { w:"いち", n:1, count:1 }, { w:"に", n:2, count:2 }, { w:"さん", n:3, count:3 },
+      { w:"よん", n:4, count:4 }, { w:"ご", n:5, count:5 }, { w:"ろく", n:6, count:6 },
+      { w:"なな", n:7, count:7 }, { w:"はち", n:8, count:8 }, { w:"きゅう", n:9, count:9 },
+      { w:"じゅう", n:10, count:10 },
+    ],
+  };
 
+  // ===== DOM =====
+  const screens = { home: document.getElementById("home"), card: document.getElementById("card") };
+  const picEl = document.getElementById("pic");
+  const wordEl = document.getElementById("word");
+  const counterEl = document.getElementById("counter");
+  const cardEl = document.getElementById("card");
+  const hintEl = document.getElementById("hint");
+
+  // ===== 状態 =====
+  let genreKey = "food";
   let deck = [];
   let order = [];
   let idx = 0;
   let revealed = false;
+
+  // ===== ホーム生成 =====
+  const grid = document.getElementById("genreGrid");
+  const keys = Object.keys(GENRES);
+  keys.forEach((key, i) => {
+    const g = GENRES[key];
+    const btn = document.createElement("button");
+    btn.className = "genre-btn " + key + (keys.length % 2 === 1 && i === keys.length - 1 ? " span2" : "");
+    btn.innerHTML = '<span class="ico">' + g.icon + '</span>' + g.label;
+    btn.addEventListener("click", () => startGenre(key));
+    grid.appendChild(btn);
+  });
 
   function show(name) {
     Object.values(screens).forEach(s => s.classList.remove("active"));
@@ -201,28 +272,87 @@
     return a;
   }
 
-  function startGenre(genre) {
-    deck = DECKS[genre];
+  function startGenre(key) {
+    genreKey = key;
+    deck = DECKS[key];
     order = shuffle(deck.map((_, i) => i));
     idx = 0;
-    cardEl.classList.remove("food", "animal");
-    cardEl.classList.add(genre);
+    cardEl.className = "screen"; // リセット
+    cardEl.classList.add(key);
     show("card");
     renderCard();
   }
 
+  // 絵柄の描画（ジャンルtypeで分岐）
+  function buildPic(card) {
+    const type = GENRES[genreKey].type;
+    picEl.innerHTML = "";
+    picEl.style.animation = "none"; void picEl.offsetWidth; picEl.style.animation = "";
+
+    if (type === "color") {
+      const sw = document.createElement("div");
+      sw.className = "swatch";
+      sw.style.background = card.c;
+      if (card.light) sw.style.boxShadow = "0 12px 26px rgba(0,0,0,.18), inset 0 0 0 4px #E0D8CE";
+      picEl.appendChild(sw);
+      return;
+    }
+    if (type === "number") {
+      const wrap = document.createElement("div");
+      wrap.className = "dots";
+      for (let i = 0; i < card.count; i++) wrap.appendChild(document.createElement("span"));
+      picEl.appendChild(wrap);
+      return;
+    }
+    // photo: 実写写真。失敗したら絵文字にフォールバック
+    const img = document.createElement("img");
+    img.className = "photo";
+    img.alt = card.w;
+    img.referrerPolicy = "no-referrer";
+    // lock=キーワードのハッシュ → 毎回おなじ写真で安定表示
+    let lock = 0;
+    for (const ch of card.k) lock = (lock * 31 + ch.charCodeAt(0)) % 100000;
+    img.src = "https://loremflickr.com/400/400/" + encodeURIComponent(card.k) + "?lock=" + lock;
+    img.onerror = () => {
+      const em = document.createElement("div");
+      em.className = "emoji";
+      em.textContent = card.e;
+      picEl.innerHTML = "";
+      picEl.appendChild(em);
+    };
+    picEl.appendChild(img);
+  }
+
   function renderCard() {
     const card = deck[order[idx]];
-    emojiEl.textContent = card.e;
-    // アニメ再生のためリフロー
-    emojiEl.style.animation = "none";
-    void emojiEl.offsetWidth;
-    emojiEl.style.animation = "";
-    wordEl.textContent = card.w;
+    buildPic(card);
+    if (GENRES[genreKey].type === "number") {
+      wordEl.innerHTML = '<span class="num">' + card.n + '</span>　' + card.w;
+    } else {
+      wordEl.textContent = card.w;
+    }
     wordEl.classList.remove("show");
     revealed = false;
     counterEl.textContent = (idx + 1) + " / " + deck.length;
     hintEl.textContent = "タップ";
+  }
+
+  // ===== 音声（日本語ボイスを選び自然な抑揚で）=====
+  let jaVoice = null;
+  function loadVoices() {
+    if (!("speechSynthesis" in window)) return;
+    const voices = speechSynthesis.getVoices().filter(v => /ja|jpn/i.test(v.lang));
+    if (!voices.length) return;
+    // 自然な日本語ボイスを優先（端末ごとの定番名）
+    const prefer = ["Kyoko", "Otoya", "O-ren", "Hattori", "Sayaka", "Google 日本語", "Microsoft", "Nanami", "Ayumi"];
+    jaVoice =
+      voices.find(v => prefer.some(p => v.name.includes(p))) ||
+      voices.find(v => /ja-JP/i.test(v.lang)) ||
+      voices[0];
+  }
+  if ("speechSynthesis" in window) {
+    loadVoices();
+    speechSynthesis.onvoiceschanged = loadVoices;
   }
 
   function speak(text) {
@@ -231,48 +361,40 @@
       speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
       u.lang = "ja-JP";
-      u.rate = 0.85;
-      u.pitch = 1.2;
+      if (jaVoice) u.voice = jaVoice;
+      u.rate = 0.9;   // ゆっくりめ
+      u.pitch = 1.0;  // 自然なピッチ（高くしすぎない）
+      u.volume = 1.0;
       speechSynthesis.speak(u);
-    } catch (e) { /* 読み上げ非対応端末は無音 */ }
+    } catch (e) { /* 非対応端末は無音 */ }
   }
 
   function nextCard() {
     idx++;
-    if (idx >= order.length) {
-      // 一巡したらシャッフルして続ける（終わりがない＝幼児向け）
-      order = shuffle(deck.map((_, i) => i));
-      idx = 0;
-    }
+    if (idx >= order.length) { order = shuffle(deck.map((_, i) => i)); idx = 0; }
     renderCard();
   }
 
-  // タップ：絵柄 → 文字（読み上げ） → 次の絵柄
-  document.getElementById("cardface").addEventListener("click", () => {
-    if (!revealed) {
-      wordEl.classList.add("show");
-      revealed = true;
-      hintEl.textContent = "つぎへ タップ";
-      speak(deck[order[idx]].w);
-    } else {
-      nextCard();
-    }
-  });
+  function reveal() {
+    if (revealed) return;
+    wordEl.classList.add("show");
+    revealed = true;
+    hintEl.textContent = "つぎへ タップ";
+    speak(deck[order[idx]].w);
+  }
 
-  // 文字が出ているときに🔊でもう一度読み上げ
+  // タップ：絵柄 → 文字(+読み上げ) → 次の絵柄
+  document.getElementById("cardface").addEventListener("click", () => {
+    if (!revealed) reveal(); else nextCard();
+  });
   document.getElementById("soundBtn").addEventListener("click", (ev) => {
     ev.stopPropagation();
-    speak(deck[order[idx]].w);
-    if (!revealed) { wordEl.classList.add("show"); revealed = true; hintEl.textContent = "つぎへ タップ"; }
+    if (!revealed) reveal(); else speak(deck[order[idx]].w);
   });
-
   document.getElementById("backBtn").addEventListener("click", (ev) => {
     ev.stopPropagation();
+    speechSynthesis && speechSynthesis.cancel();
     show("home");
-  });
-
-  document.querySelectorAll(".genre-btn").forEach(btn => {
-    btn.addEventListener("click", () => startGenre(btn.dataset.genre));
   });
 </script>
 </body>
