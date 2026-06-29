@@ -108,11 +108,12 @@
     box-shadow: 0 12px 26px rgba(0,0,0,.2), inset 0 0 0 6px rgba(255,255,255,.55);
   }
   .dots {
-    display: flex; flex-wrap: wrap; gap: 4%; align-content: center; justify-content: center;
-    width: 100%; height: 100%;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    gap: 9%; width: 100%; height: 100%;
   }
-  .dots span {
-    width: 22%; aspect-ratio: 1; border-radius: 50%;
+  .dotrow { display: flex; justify-content: center; gap: 5%; width: 100%; }
+  .dotrow span {
+    width: 16%; aspect-ratio: 1; border-radius: 50%;
     background: radial-gradient(circle at 35% 30%, #FF8FAB, #E8467A);
     box-shadow: 0 4px 8px rgba(0,0,0,.18);
   }
@@ -191,6 +192,17 @@
       { e:"🥚", w:"たまご", k:"egg" }, { e:"🥛", w:"ぎゅうにゅう", k:"milk,glass" },
       { e:"🧀", w:"チーズ", k:"cheese" }, { e:"🍰", w:"ケーキ", k:"cake,slice" },
       { e:"🍪", w:"クッキー", k:"cookie" }, { e:"🍦", w:"アイス", k:"icecream" },
+      { e:"🍐", w:"なし" }, { e:"🍒", w:"さくらんぼ" }, { e:"🍍", w:"パイナップル" },
+      { e:"🥝", w:"キウイ" }, { e:"🍈", w:"メロン" }, { e:"🍋", w:"レモン" },
+      { e:"🥭", w:"マンゴー" }, { e:"🫐", w:"ブルーベリー" }, { e:"🥔", w:"じゃがいも" },
+      { e:"🍆", w:"なす" }, { e:"🥒", w:"きゅうり" }, { e:"🥦", w:"ブロッコリー" },
+      { e:"🍄", w:"きのこ" }, { e:"🍠", w:"さつまいも" }, { e:"🌰", w:"くり" },
+      { e:"🍣", w:"おすし" }, { e:"🍛", w:"カレー" }, { e:"🍕", w:"ピザ" },
+      { e:"🍔", w:"ハンバーガー" }, { e:"🍟", w:"ポテト" }, { e:"🍝", w:"スパゲッティ" },
+      { e:"🥟", w:"ぎょうざ" }, { e:"🍳", w:"めだまやき" }, { e:"🥞", w:"パンケーキ" },
+      { e:"🍩", w:"ドーナツ" }, { e:"🍫", w:"チョコ" }, { e:"🍬", w:"あめ" },
+      { e:"🍡", w:"だんご" }, { e:"🍢", w:"おでん" }, { e:"🍯", w:"はちみつ" },
+      { e:"🧃", w:"ジュース" }, { e:"🍵", w:"おちゃ" },
     ],
     animal: [
       { e:"🐶", w:"いぬ", k:"dog,puppy" }, { e:"🐱", w:"ねこ", k:"cat,kitten" },
@@ -309,7 +321,16 @@
     if (type === "number") {
       const wrap = document.createElement("div");
       wrap.className = "dots";
-      for (let i = 0; i < card.count; i++) wrap.appendChild(document.createElement("span"));
+      // 5こずつの行に分けて「5のかたまり」で見せる
+      let remaining = card.count;
+      while (remaining > 0) {
+        const row = document.createElement("div");
+        row.className = "dotrow";
+        const n = Math.min(5, remaining);
+        for (let i = 0; i < n; i++) row.appendChild(document.createElement("span"));
+        wrap.appendChild(row);
+        remaining -= 5;
+      }
       picEl.appendChild(wrap);
       return;
     }
